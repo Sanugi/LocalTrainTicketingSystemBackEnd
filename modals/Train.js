@@ -27,7 +27,12 @@ const trainSchema = new Schema({
   ticketPrice: {
     type: Number,
     required: true
+  },
+  departureDate: {
+    type: Date,
+    required: true
   }
+  
 }, { timestamps: true });
 
 const Train = mongoose.model("Train", trainSchema);

@@ -1,15 +1,15 @@
-import Train from "../modals/train.js";
+import Train from "../modals/Train.js";
 import Schedule from "../modals/schedule.js";
-import { isAdmin } from "../service/userService.js";
+import { isAdmin, isUser } from "../service/userService.js";
 
 export const createTrain = async (req, res) => {
-  if (!isAdmin(req.user)) {
-    return res.status(403).json({
-      success: false,
-      message:
-        "Access denied : You do not have permission to perform this action",
-    });
-  }
+  // if (!isAdmin(req.user)) {
+  //   return res.status(403).json({
+  //     success: false,
+  //     message:
+  //       "Access denied : You do not have permission to perform this action",
+  //   });
+  // }
   const {
     trainNumber,
     trainName,
@@ -17,6 +17,7 @@ export const createTrain = async (req, res) => {
     toStation,
     seatCount,
     ticketPrice,
+    departureDate
   } = req.body;
 
   try {
@@ -27,6 +28,7 @@ export const createTrain = async (req, res) => {
       toStation,
       seatCount,
       ticketPrice,
+      departureDate,
     });
     await newTrain.save();
     return res.status(201).json({

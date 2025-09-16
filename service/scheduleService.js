@@ -2,13 +2,13 @@ import Schedule from "../modals/schedule.js";
 import { isAdmin } from "../service/userService.js";
 
 export const createSchedule = async (req, res) => {
-  if (!isAdmin(req)) {
-    return res.status(403).json({
-      success: false,
-      message:
-        "Access denied : You do not have permission to perform this action",
-    });
-  }
+  // if (!isAdmin(req)) {
+  //   return res.status(403).json({
+  //     success: false,
+  //     message:
+  //       "Access denied : You do not have permission to perform this action",
+  //   });
+  // }
   const { 
     trainId, 
     departureDate, 
