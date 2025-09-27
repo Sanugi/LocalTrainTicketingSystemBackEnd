@@ -28,10 +28,10 @@ const trainSchema = new Schema({
     type: Number,
     required: true
   },
-  departureDate: {
-    type: Date,
-    required: true
-  }
+  // departureDate: {
+  //   type: Date,
+  //   required: true
+  // }
   
 }, { timestamps: true });
 
