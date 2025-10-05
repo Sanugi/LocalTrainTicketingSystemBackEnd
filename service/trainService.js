@@ -1,4 +1,4 @@
-import Train from "../modals/train.js";
+import Train from "../modals/Train.js";
 import Schedule from "../modals/schedule.js";
 import { isAdmin } from "../service/userService.js";
 
