@@ -24,7 +24,7 @@ connection.once("open", () => {
   console.log("Database connected");
 });
 
-//add endpoint here
+//endpoints
 app.use("/api/users", userController);
 app.use("/api/trains", trainController);
 app.use("/api/schedules", scheduleController);
