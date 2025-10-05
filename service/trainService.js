@@ -1,15 +1,15 @@
-import Train from "../modals/Train.js";
+import Train from "../modals/train.js";
 import Schedule from "../modals/schedule.js";
-import { isAdmin, isUser } from "../service/userService.js";
+import { isAdmin } from "../service/userService.js";
 
 export const createTrain = async (req, res) => {
-  // if (!isAdmin(req.user)) {
-  //   return res.status(403).json({
-  //     success: false,
-  //     message:
-  //       "Access denied : You do not have permission to perform this action",
-  //   });
-  // }
+  if (!isAdmin(req)) {
+    return res.status(403).json({
+      success: false,
+      message:
+        "Access denied : You do not have permission to perform this action",
+    });
+  }
   const {
     trainNumber,
     trainName,
@@ -17,7 +17,6 @@ export const createTrain = async (req, res) => {
     toStation,
     seatCount,
     ticketPrice,
-    departureDate
   } = req.body;
 
   try {
@@ -28,7 +27,6 @@ export const createTrain = async (req, res) => {
       toStation,
       seatCount,
       ticketPrice,
-      departureDate,
     });
     await newTrain.save();
     return res.status(201).json({
@@ -88,7 +86,7 @@ export const getTrainById = async (req, res) => {
 export const updateTrain = async (req, res) => {
   const { id } = req.params;
   const updateFields = req.body;
-  if (!isAdmin(req.user)) {
+  if (!isAdmin(req)) {
     return res.status(403).json({
       success: false,
       message:
@@ -123,7 +121,7 @@ export const updateTrain = async (req, res) => {
 
 export const deleteTrain = async (req, res) => {
   const { id } = req.params;
-  if (!isAdmin(req.user)) {
+  if (!isAdmin(req)) {
     return res.status(403).json({
       success: false,
       message:
@@ -166,6 +164,7 @@ export const filterAvailableTrains = async (req, res) => {
         message: "fromStation, toStation, and date are required",
       });
     }
+    
 
     const searchDate = new Date(date);
     if (isNaN(searchDate.getTime())) {
