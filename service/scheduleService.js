@@ -1,4 +1,5 @@
 import Schedule from "../modals/schedule.js";
+import Train from "../modals/Train.js";
 import { isAdmin } from "../service/userService.js";
 
 export const createSchedule = async (req, res) => {
@@ -165,14 +166,16 @@ export const deleteSchedule = async (req, res) => {
 
 export const getAllScheduleByTrainId = async (req, res) => {
   const { id } = req.params;
+const train = await Train.findOne({ trainNumber: id });
 
   try {
-    const schedules = await Schedule.find({ trainId: id }).populate("trainId");
+    const schedules = await Schedule.find({ trainId: train._id }).populate("trainId");
     return res.status(200).json({
       success: true,
       data: schedules,
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       success: false,
       message: "Internal server error",

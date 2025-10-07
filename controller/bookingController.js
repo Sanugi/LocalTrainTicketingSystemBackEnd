@@ -2,7 +2,6 @@ import express from "express";
 
 import {
   createBooking,
-  getBooking,
   updateBooking,
   deleteBooking,
   getAllBookings,
@@ -11,10 +10,9 @@ import {
 
 const bookingController = express.Router();
 
-bookingController.post('/bookings', createBooking);
+bookingController.post('/', createBooking);
 bookingController.get('/bookings', getAllBookings);
 bookingController.get('/bookings/user/:id', getAllBookingsForUser);
-bookingController.get('/bookings/:id', getBooking);
 bookingController.patch('/bookings/:id', updateBooking);
 bookingController.delete('/bookings/:id', deleteBooking);
 

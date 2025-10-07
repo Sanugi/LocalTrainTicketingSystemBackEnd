@@ -15,7 +15,7 @@ const bookingSchema = new Schema(
       required: true,
     },
     seatsBooked: {
-      ype: Number,
+      type: Number,
       required: true,
     },
     totalAmount: {
@@ -28,8 +28,8 @@ const bookingSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["Confirmed", "Cancelled"],
-      default: "Confirmed",
+      enum: ["Confirmed", "Cancelled", "Pending"],
+      default: "Pending",
     },
   },
   { timestamps: true }

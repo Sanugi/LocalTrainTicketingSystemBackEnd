@@ -1,12 +1,14 @@
 import Booking from "../modals/booking.js";
 import Schedule from "../modals/schedule.js";
+import { isAdmin } from "./userService.js";
+import Train from "../modals/Train.js";
 
 export const createBooking = async (req, res) => {
-  const { userId, scheduleId, seatsBooked, totalAmount } = req.body;
+  const { scheduleId, seatsBooked, totalAmount } = req.body;
 
   try {
     const newBooking = new Booking({
-      userId,
+      userId: req.user.userId,
       scheduleId,
       seatsBooked,
       totalAmount,
@@ -27,6 +29,7 @@ export const createBooking = async (req, res) => {
       data: newBooking,
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -40,14 +43,26 @@ export const getAllBookings = async (req, res) => {
     return res.status(403).json({
       success: false,
       message:
-        "Access denied : You do not have permission to perform this action",
+        "Access denied: You do not have permission to perform this action",
     });
   }
   try {
     const bookings = await Booking.find().populate("userId scheduleId");
+    const trainDetails = await Promise.all(
+      bookings.map(async (booking) => {
+        const trainId = booking.scheduleId.trainId;
+        const train = await Train.findById(trainId);
+
+        return {
+          ...booking._doc,
+          train,
+        };
+      })
+    );
+
     return res.status(200).json({
       success: true,
-      data: bookings,
+      data: trainDetails,
     });
   } catch (error) {
     return res.status(500).json({
@@ -132,11 +147,17 @@ export const updateBooking = async (req, res) => {
   }
 };
 
+
 export const deleteBooking = async (req, res) => {
   const { id } = req.params;
 
   try {
     const deletedBooking = await Booking.findByIdAndDelete({ _id: id });
+    const schedule = await Schedule.findById(deletedBooking.scheduleId);
+    if (schedule) {
+      schedule.availableSeats += deletedBooking.seatsBooked;
+      await schedule.save();
+    }
     if (!deletedBooking) {
       return res.status(404).json({
         success: false,

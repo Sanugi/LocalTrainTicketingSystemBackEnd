@@ -6,6 +6,7 @@ import authenticate from "./helpers/authenticate.js";
 import userController from "./controller/userController.js";
 import trainController from "./controller/trainController.js";
 import scheduleController from "./controller/scheduleController.js";
+import bookingController from "./controller/bookingController.js";
 
 dotenv.config();
 const app = express();
@@ -28,6 +29,7 @@ connection.once("open", () => {
 app.use("/api/users", userController);
 app.use("/api/trains", trainController);
 app.use("/api/schedules", scheduleController);
+app.use("/api/bookings", bookingController);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

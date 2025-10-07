@@ -2,10 +2,25 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../modals/User.js";
 import authConstants from "../constant/auth.js";
+import nodemailer from "nodemailer";
 
 const { USER, ADMIN, TOKEN_VALID_TIME } = authConstants;
 
 const JWT_SECRET = process.env.JWT_SECRET;
+
+const transporter = nodemailer.createTransport({
+  service: process.env.EMAIL_SERVICE,
+  host: process.env.EMAIL_HOST,
+  port: process.env.EMAIL_PORT,
+  secure: process.env.EMAIL_SECURE,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+const generateCode = () => Math.floor(100000 + Math.random() * 900000).toString();
+const RESET_CODE_TTL_MINUTES = 15;
 
 export const userRegistration = async (req, res) => {
   try {
@@ -216,5 +231,87 @@ export const updateUser = async (req, res) => {
       message: "Internal server error",
       error: error.message,
     });
+  }
+};
+
+// Request password reset: generate code, save to user, send email
+export const requestPasswordReset = async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ success: false, message: "Email is required" });
+  }
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      // Do not reveal whether email exists — respond with 200 for security
+      return res.status(200).json({ success: true, message: "If that email exists, a reset code was sent" });
+    }
+
+    const code = generateCode();
+    const expires = new Date(Date.now() + RESET_CODE_TTL_MINUTES * 60 * 1000);
+
+    user.resetCode = code;
+    user.resetCodeExpires = expires;
+    await user.save();
+
+    // send email
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: user.email,
+      subject: "Password reset code",
+      text: `Your password reset code is: ${code}. It expires in ${RESET_CODE_TTL_MINUTES} minutes.`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    return res.status(200).json({ success: true, message: "If that email exists, a reset code was sent" });
+  } catch (error) {
+    console.error("Error in requestPasswordReset:", error);
+    return res.status(500).json({ success: false, message: "Internal server error", error: error.message });
+  }
+};
+
+// Verify reset code
+export const verifyResetCode = async (req, res) => {
+  const { email, otp } = req.body;
+  if (!email || !otp) {
+    return res.status(400).json({ success: false, message: "Email and OTP are required" });
+  }
+  try {
+    const user = await User.findOne({ email });
+    if (!user || !user.resetCode) {
+      return res.status(400).json({ success: false, message: "Invalid OTP or email" });
+    }
+    if (user.resetCode !== otp) {
+      return res.status(400).json({ success: false, message: "Invalid OTP" });
+    }
+    if (!user.resetCodeExpires || user.resetCodeExpires < new Date()) {
+      return res.status(400).json({ success: false, message: "Code expired" });
+    }
+
+    return res.status(200).json({ success: true, message: "Code verified" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Internal server error", error: error.message });
+  }
+};
+
+// Reset password after verifying code
+export const resetPassword = async (req, res) => {
+  const { email, password } = req.body;
+  if (!email && !password) {
+    return res.status(400).json({ success: false, message: "Email and newPassword are required" });
+  }
+  try {
+    const user = await User.findOne({ email });
+
+    const hashed = await bcrypt.hash(password, 10);
+    user.password = hashed;
+    user.resetCode = null;
+    user.resetCodeExpires = null;
+    await user.save();
+
+    return res.status(200).json({ success: true, message: "Password reset successfully" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Internal server error", error: error.message });
   }
 };

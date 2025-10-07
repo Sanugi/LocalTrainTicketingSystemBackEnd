@@ -18,6 +18,14 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
+    resetCode: {
+      type: String,
+      default: null,
+    },
+    resetCodeExpires: {
+      type: Date,
+      default: null,
+    },
     role: {
       type: String,
       enum: ["Admin", "User"],
